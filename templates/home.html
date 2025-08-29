@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datalogger Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Navigasyon Barı */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Ana İçerik */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-title {
+            font-size: 3em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-subtitle {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        /* İstatistikler */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Cihazlar Başlığı */
+        .devices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .devices-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .devices-count {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Cihaz Grid */
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .device-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .device-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .device-info h3 {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .device-id {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .status-inactive {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+            color: white;
+        }
+
+        .device-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .data-item {
+            text-align: center;
+            padding: 15px 10px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .data-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: capitalize;
+        }
+
+        .data-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .data-unit {
+            font-size: 0.7em;
+            color: #7f8c8d;
+        }
+
+        .device-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .last-update {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .view-details {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-details:hover {
+            transform: scale(1.05);
+        }
+
+        .no-devices {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .no-devices h3 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .no-devices p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* Auto-refresh indicator */
+        .refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .refresh-indicator.show {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .dashboard-title {
+                font-size: 2em;
+            }
+
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .devices-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigasyon Barı -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">📊 Datalogger Dashboard</div>
+            <div class="nav-buttons">
+                <a href="{% url 'compare_devices' %}" class="nav-btn primary">
+                    📊 Karşılaştır
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Datalogger Dashboard</h1>
+            <p class="dashboard-subtitle">Tüm cihazlarınızın anlık durumu ve verileri</p>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_devices|default:0 }}</div>
+                <div class="stat-label">Toplam Cihaz</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ latest_readings|length|default:0 }}</div>
+                <div class="stat-label">Veri Bulunan Cihaz</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_readings|default:0 }}</div>
+                <div class="stat-label">Toplam Okuma</div>
+            </div>
+        </div>
+
+        <!-- Cihazlar Başlığı -->
+        {% if latest_readings %}
+        <div class="devices-header">
+            <h2 class="devices-title">Cihazlar</h2>
+            <div class="devices-count">{{ latest_readings|length }} Cihaz</div>
+        </div>
+        {% endif %}
+
+        <!-- Cihaz Grid -->
+        {% if latest_readings %}
+            <div class="devices-grid">
+                {% for reading in latest_readings %}
+                    <a href="{% url 'device_detail' device_id=reading.device.device_id %}" class="device-card">
+                        <!-- Cihaz Header -->
+                        <div class="device-header">
+                            <div class="device-info">
+                                <h3>{{ reading.device.name }}</h3>
+                                <div class="device-id">ID: {{ reading.device.device_id }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Cihaz Verileri -->
+                        {% if reading.properties %}
+                            <div class="device-data">
+                                {% for key, value in reading.properties.items %}
+                                    <div class="data-item">
+                                        <div class="data-label">{{ key|capfirst }}</div>
+                                        <div class="data-value">{{ value }}</div>
+                                        <div class="data-unit">
+                                            {% if key == 'temperature' %}°C
+                                            {% elif key == 'pressure' %}hPa
+                                            {% elif key == 'humidity' %}%
+                                            {% elif key == 'voltage' %}V
+                                            {% elif key == 'current' %}A
+                                            {% elif key == 'power' %}W
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="device-data">
+                                <div class="data-item" style="grid-column: 1 / -1;">
+                                    <div class="data-label">Veri Durumu</div>
+                                    <div class="data-value" style="color: #e74c3c;">Veri Yok</div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Cihaz Footer -->
+                        <div class="device-footer">
+                            <div class="last-update">
+                                Son güncelleme: {{ reading.created_at|date:"d M Y - H:i" }}
+                            </div>
+                            <div class="view-details">Detayları Gör →</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-devices">
+                <h3>🔍 Henüz Cihaz Bulunmuyor</h3>
+                <p>Sistemde gösterilecek cihaz verisi bulunamadı. Admin panelinden cihaz ekleyebilirsiniz.</p>
+            </div>
+        {% endif %}
+    </div>

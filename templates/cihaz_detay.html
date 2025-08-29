@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ device.name }} - Cihaz Detayları</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .device-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .device-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .device-id {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .latest-data-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .data-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .data-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+        }
+
+        .data-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .data-unit {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .status-card.inactive {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+        }
+
+        .timestamp-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            grid-column: 1 / -1;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .history-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .history-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .history-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .history-table tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .device-title {
+                font-size: 2em;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timestamp-card {
+                grid-column: 1;
+            }
+
+            .history-table {
+                font-size: 0.9em;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Geri Dön Butonu -->
+        <a href="{% url 'home' %}" class="back-btn">
+            ← Ana Sayfaya Dön
+        </a>
+
+        <!-- Cihaz Başlığı -->
+        <div class="device-header">
+            <h1 class="device-title">{{ device.name }}</h1>
+            <div class="device-id">Cihaz ID: {{ device.device_id }}</div>
+        </div>
+
+        <!-- Son Veriler -->
+        <div class="latest-data-section">
+            <h2 class="section-title">Son Veriler</h2>
+
+            {% if veri_gecmisi %}
+                {% with son_veri=veri_gecmisi.0 %}
+                    {% if son_veri.properties %}
+                        <div class="data-grid">
+                            {% for key, value in son_veri.properties.items %}
+                                <div class="data-card">
+                                    <div class="data-label">{{ key|capfirst }}</div>
+                                    <div class="data-value">{{ value }}</div>
+                                    <div class="data-unit">
+                                        {% if key == 'temperature' %}°C
+                                        {% elif key == 'pressure' %}hPa
+                                        {% elif key == 'humidity' %}%
+                                        {% elif key == 'voltage' %}V
+                                        {% elif key == 'current' %}A
+                                        {% elif key == 'power' %}W
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                            <!-- Zaman Kartı -->
+                            <div class="data-card timestamp-card">
+                                <div class="data-label">Son Güncelleme</div>
+                                <div class="data-value" style="font-size: 1.2em;">{{ son_veri.updated_at|date:"d M Y - H:i:s" }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="no-data-message">
+                            Bu cihaz için veri bulunamadı
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                <div class="no-data-message">
+                    Bu cihaz için henüz veri kaydı bulunmuyor
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Veri Geçmişi -->
+        <div class="history-section">
+            <h2 class="section-title">Veri Geçmişi</h2>
+
+            {% if veri_gecmisi %}
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih & Saat</th>
+                            {% if veri_gecmisi.0.properties %}
+                                {% for key in veri_gecmisi.0.properties.keys %}
+                                    <th>{{ key|capfirst }}</th>
+                                {% endfor %}
+                            {% endif %}
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for okuma in veri_gecmisi %}
+                            <tr>
+                                <td><strong>{{ okuma.updated_at|date:"d M Y - H:i:s" }}</strong></td>
+                                {% if okuma.properties %}
+                                    {% for key, value in okuma.properties.items %}
+                                        <td>
+                                            {{ value }}
+                                            {% if key == 'temperature' %} °C
+                                            {% elif key == 'pressure' %} hPa
+                                            {% elif key == 'humidity' %} %
+                                            {% elif key == 'voltage' %} V
+                                            {% elif key == 'current' %} A
+                                            {% elif key == 'power' %} W
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                {% else %}
+                                    <td colspan="{% if veri_gecmisi.0.properties %}{{ veri_gecmisi.0.properties.keys|length }}{% else %}1{% endif %}">
+                                        <em>Veri yok</em>
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    <a href="?edit={{ okuma.id }}" style="color: #667eea; text-decoration: none; margin-right: 10px;">
+                                        ✏️ Düzenle
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Düzenleme Formu -->
+                {% if edit_reading %}
+                    <div style="background: rgba(102, 126, 234, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">
+                            Veri Kaydını Düzenle - {{ edit_reading.created_at|date:"d M Y - H:i:s" }}
+                        </h3>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="edit_reading">
+
+                            <!-- Mevcut Properties -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                {% for key, value in edit_reading.properties.items %}
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; color: #666; font-weight: bold;">
+                                            {{ key|capfirst }}:
+                                        </label>
+                                        <input type="text"
+                                               name="property_{{ key }}"
+                                               value="{{ value }}"
+                                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit"
+                                        style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                                               color: white; padding: 10px 20px; border: none;
+                                               border-radius: 5px; cursor: pointer;">
+                                    Kaydet
+                                </button>
+
+                                <button type="submit" name="action" value="delete_reading"
+                                        style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+                                               color: white; padding: 10px 20px; border: none;
+                                               border-radius: 5px; cursor: pointer;"
+                                        onclick="return confirm('Bu veri kaydını silmek istediğinizden emin misiniz?')">
+                                    Sil
+                                </button>
+
+                                <a href="{% url 'device_detail' device_id=device.device_id %}"
+                                   style="background: #95a5a6; color: white; padding: 10px 20px;
+                                          text-decoration: none; border-radius: 5px; display: inline-block;">
+                                    İptal
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div class="no-data-message">
+                    Bu cihaz için geçmiş veri kaydı bulunmuyor
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
