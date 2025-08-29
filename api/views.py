@@ -226,7 +226,7 @@ def update_data(request,device_id):
             device = device,
             properties = new_properties,
         )
-        return JsonResponse({'status': 'Succesfully updated'})
+        return JsonResponse({'status': 'Succesfully updated'},status=200)
 
 
 
@@ -236,7 +236,7 @@ def delete_data(request,device_id):
         if device_id:
             device = Device.objects.get(device_id = device_id)
             DeviceReading.objects.filter(device = device).delete()
-            return JsonResponse({'status': 'Succesfully deleted'})
+            return JsonResponse({'status': 'Succesfully deleted'},status=200)
 
         else:
             return JsonResponse({'error':'Device not found'}, status=404)
@@ -247,13 +247,11 @@ def delete_data(request,device_id):
 @csrf_exempt
 def delete_device(request,device_id):
     if request.method == 'DELETE':
-        data = json.loads(request.body)
-        device_id = data.get('device_id')
 
         if device_id:
             device =Device.objects.get(device_id = device_id)
             device.delete()
-            return JsonResponse({'status': 'Succesfully deleted'})
+            return JsonResponse({'status': 'Succesfully deleted'},status=200)
 
         else:
             return JsonResponse({'error':'Device not found'}, status=404)
