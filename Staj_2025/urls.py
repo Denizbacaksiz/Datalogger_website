@@ -27,7 +27,7 @@ urlpatterns = [
     path('device/<str:device_id>/', device_detail_view, name='device_detail'),
     path('compare_devices',compare_devices_view, name='compare_devices'),
 
-
+#API endpoints
     path('api/device/add_device/', add_device, name='add_device'),
     path('api/device/<str:device_id>/add_data/', add_data, name='add_data'),
     path('api/device/<str:device_id>/update_data/', update_data, name='update_data'),

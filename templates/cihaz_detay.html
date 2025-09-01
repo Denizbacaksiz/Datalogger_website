@@ -327,6 +327,72 @@
                     </tbody>
                 </table>
 
+                <!-- Django Messages - Düzenleme formunun hemen üstüne eklendi -->
+                {% if messages %}
+                    <div class="messages-container" style="margin: 20px 0;">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" style="
+                                background: rgba(255, 255, 255, 0.95);
+                                padding: 15px 20px;
+                                margin-bottom: 15px;
+                                border-radius: 15px;
+                                border-left: 4px solid;
+                                position: relative;
+                                backdrop-filter: blur(10px);
+                                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                                {% if message.tags == 'error' %}
+                                    border-left-color: #e74c3c;
+                                    background: rgba(231, 76, 60, 0.1);
+                                {% elif message.tags == 'success' %}
+                                    border-left-color: #27ae60;
+                                    background: rgba(39, 174, 96, 0.1);
+                                {% elif message.tags == 'warning' %}
+                                    border-left-color: #f39c12;
+                                    background: rgba(243, 156, 18, 0.1);
+                                {% else %}
+                                    border-left-color: #3498db;
+                                    background: rgba(52, 152, 219, 0.1);
+                                {% endif %}
+                            ">
+                                <strong style="
+                                    {% if message.tags == 'error' %}
+                                        color: #c0392b;
+                                    {% elif message.tags == 'success' %}
+                                        color: #229954;
+                                    {% elif message.tags == 'warning' %}
+                                        color: #d68910;
+                                    {% else %}
+                                        color: #2980b9;
+                                    {% endif %}
+                                ">
+                                    {% if message.tags == 'error' %}
+                                        ❌ Hata:
+                                    {% elif message.tags == 'success' %}
+                                        ✅ Başarılı:
+                                    {% elif message.tags == 'warning' %}
+                                        ⚠️ Uyarı:
+                                    {% else %}
+                                        ℹ️ Bilgi:
+                                    {% endif %}
+                                </strong>
+                                <span style="margin-left: 8px; color: #2c3e50;">{{ message }}</span>
+                                <button type="button" onclick="this.parentElement.style.display='none'" style="
+                                    position: absolute;
+                                    top: 12px;
+                                    right: 15px;
+                                    background: none;
+                                    border: none;
+                                    font-size: 20px;
+                                    cursor: pointer;
+                                    opacity: 0.6;
+                                    color: #7f8c8d;
+                                    transition: opacity 0.3s ease;
+                                " title="Kapat" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">×</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <!-- Düzenleme Formu -->
                 {% if edit_reading %}
                     <div style="background: rgba(102, 126, 234, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">

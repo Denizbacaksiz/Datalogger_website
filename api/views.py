@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib import messages
 from .models import Device, DeviceReading
 import json
 
@@ -55,28 +55,38 @@ def device_detail_view(request, device_id):
     if request.method == 'POST':
         action = request.POST.get('action')
 
-
         if action == 'edit_reading' and edit_reading:
             new_properties = {}
+            invalid = False
 
             for key , value in request.POST.items():
                 if key.startswith('property_'):
                     prop_key = key.replace('property_', '')
+                    new_properties[prop_key] = value
 
-                    try:
-                        new_properties[prop_key] = float(value)
-                    except ValueError:
-                        new_properties[prop_key] = value
+            for key , value in new_properties.items():
+                try:
+                    if value.isdigit() or (value.startswith('-') and value[1:].isdigit()):
+                        new_properties[key] = int(value)
+                    else:
+                        new_properties[key] = float(value)
+
+                except (ValueError,TypeError):
+                    messages.error(request, 'Geçersiz bir değer girdiniz!')
+                    invalid = True
+
+            if invalid:
+                return redirect(f'/device/{device_id}/?edit={edit_reading_id}')
 
             edit_reading.properties = new_properties
             edit_reading.save()
 
-            return redirect('device_detail', device_id = device.id)
+            return redirect('device_detail', device_id = device.device_id)
 
 
         elif action == 'delete_reading' and edit_reading:
             edit_reading.delete()
-            return redirect('device_detail', device_id = device.id)
+            return redirect('device_detail', device_id = device.device_id)
 
 
     context = {
@@ -171,7 +181,7 @@ def add_device(request):
                 name = data.get('name'),
                 device_id = data.get('device_id'),
             )
-            return JsonResponse({'Successfully added': True})
+            return JsonResponse({'Successfully added'},status=200)
 
 
 
@@ -196,7 +206,7 @@ def add_data(request,device_id):
             device = device,
             properties = new_data,
         )
-        return JsonResponse({'Successfully added': True})
+        return JsonResponse({'Successfully added'},status=200)
 
     else:
         return JsonResponse({'error':'Device does not exist'}, status=400)
