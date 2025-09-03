@@ -24,8 +24,6 @@ class DeviceReading(models.Model):
         ordering = ['created_at']
 
 
-
-
     @property
     def data(self):
         return self.properties

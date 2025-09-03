@@ -181,7 +181,7 @@ def add_device(request):
                 name = data.get('name'),
                 device_id = data.get('device_id'),
             )
-            return JsonResponse({'Successfully added'},status=200)
+            return JsonResponse({'status':'Successfully added'},status=200)
 
 
 
@@ -206,7 +206,7 @@ def add_data(request,device_id):
             device = device,
             properties = new_data,
         )
-        return JsonResponse({'Successfully added'},status=200)
+        return JsonResponse({'status':'Successfully added'},status=200)
 
     else:
         return JsonResponse({'error':'Device does not exist'}, status=400)
