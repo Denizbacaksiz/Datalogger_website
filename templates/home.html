@@ -346,6 +346,38 @@
             opacity: 1;
         }
 
+        /* Loading animation */
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            z-index: 10000;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.1);
+            display: none;
+            z-index: 9999;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-container {
@@ -389,6 +421,10 @@
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay"></div>
+    <div class="loading-spinner" id="loadingSpinner"></div>
+
     <!-- Navigasyon Barı -->
     <nav class="navbar">
         <div class="nav-container">
@@ -409,7 +445,7 @@
         </div>
 
         <!-- İstatistikler -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
                 <div class="stat-number">{{ total_devices|default:0 }}</div>
                 <div class="stat-label">Toplam Cihaz</div>
@@ -426,67 +462,199 @@
 
         <!-- Cihazlar Başlığı -->
         {% if latest_readings %}
-        <div class="devices-header">
+        <div class="devices-header" id="devicesHeader">
             <h2 class="devices-title">Cihazlar</h2>
             <div class="devices-count">{{ latest_readings|length }} Cihaz</div>
         </div>
         {% endif %}
 
         <!-- Cihaz Grid -->
-        {% if latest_readings %}
-            <div class="devices-grid">
-                {% for reading in latest_readings %}
-                    <a href="{% url 'device_detail' device_id=reading.device.device_id %}" class="device-card">
-                        <!-- Cihaz Header -->
-                        <div class="device-header">
-                            <div class="device-info">
-                                <h3>{{ reading.device.name }}</h3>
-                                <div class="device-id">ID: {{ reading.device.device_id }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Cihaz Verileri -->
-                        {% if reading.properties %}
-                            <div class="device-data">
-                                {% for key, value in reading.properties.items %}
-                                    <div class="data-item">
-                                        <div class="data-label">{{ key|capfirst }}</div>
-                                        <div class="data-value">{{ value }}</div>
-                                        <div class="data-unit">
-                                            {% if key == 'temperature' %}°C
-                                            {% elif key == 'pressure' %}hPa
-                                            {% elif key == 'humidity' %}%
-                                            {% elif key == 'voltage' %}V
-                                            {% elif key == 'current' %}A
-                                            {% elif key == 'power' %}W
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="device-data">
-                                <div class="data-item" style="grid-column: 1 / -1;">
-                                    <div class="data-label">Veri Durumu</div>
-                                    <div class="data-value" style="color: #e74c3c;">Veri Yok</div>
+        <div id="devicesContainer">
+            {% if latest_readings %}
+                <div class="devices-grid" id="devicesGrid">
+                    {% for reading in latest_readings %}
+                        <a href="{% url 'device_detail' device_id=reading.device.device_id %}" class="device-card">
+                            <!-- Cihaz Header -->
+                            <div class="device-header">
+                                <div class="device-info">
+                                    <h3>{{ reading.device.name }}</h3>
+                                    <div class="device-id">ID: {{ reading.device.device_id }}</div>
                                 </div>
                             </div>
-                        {% endif %}
 
-                        <!-- Cihaz Footer -->
-                        <div class="device-footer">
-                            <div class="last-update">
-                                Son güncelleme: {{ reading.updated_at|date:"d M Y - H:i" }}
+                            <!-- Cihaz Verileri -->
+                            {% if reading.properties %}
+                                <div class="device-data">
+                                    {% for key, value in reading.properties.items %}
+                                        <div class="data-item">
+                                            <div class="data-label">{{ key|capfirst }}</div>
+                                            <div class="data-value">{{ value }}</div>
+                                            <div class="data-unit">
+                                                {% if key == 'temperature' %}°C
+                                                {% elif key == 'pressure' %}hPa
+                                                {% elif key == 'humidity' %}%
+                                                {% elif key == 'voltage' %}V
+                                                {% elif key == 'current' %}A
+                                                {% elif key == 'power' %}W
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="device-data">
+                                    <div class="data-item" style="grid-column: 1 / -1;">
+                                        <div class="data-label">Veri Durumu</div>
+                                        <div class="data-value" style="color: #e74c3c;">Veri Yok</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Cihaz Footer -->
+                            <div class="device-footer">
+                                <div class="last-update">
+                                    Son güncelleme: {{ reading.updated_at|date:"d M Y - H:i" }}
+                                </div>
+                                <div class="view-details">Detayları Gör →</div>
                             </div>
-                            <div class="view-details">Detayları Gör →</div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="no-devices">
-                <h3>🔍 Henüz Cihaz Bulunmuyor</h3>
-                <p>Sistemde gösterilecek cihaz verisi bulunamadı. Admin panelinden cihaz ekleyebilirsiniz.</p>
-            </div>
-        {% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-devices">
+                    <h3>🔍 Henüz Cihaz Bulunmuyor</h3>
+                    <p>Sistemde gösterilecek cihaz verisi bulunamadı. Admin panelinden cihaz ekleyebilirsiniz.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
+
+    <!-- Refresh Indicator -->
+    <div class="refresh-indicator" id="refreshIndicator">
+        🔄 Veriler güncelleniyor...
+    </div>
+
+    <!-- AJAX ve Auto-refresh JavaScript -->
+    <script>
+        // CSRF Token alma fonksiyonu
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // Loading göstergeleri
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'block';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Refresh indicator gösterme/gizleme
+        function showRefreshIndicator() {
+            document.getElementById('refreshIndicator').classList.add('show');
+        }
+
+        function hideRefreshIndicator() {
+            setTimeout(() => {
+                document.getElementById('refreshIndicator').classList.remove('show');
+            }, 1000);
+        }
+
+        // Veri güncelleme fonksiyonu
+        function updateData() {
+            showRefreshIndicator();
+
+            fetch(window.location.href, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Sayfayı yenile (veriler güncellensin)
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Veri güncelleme hatası:', error);
+            })
+            .finally(() => {
+                hideRefreshIndicator();
+            });
+        }
+
+        // Sayfa yüklendiğinde auto-refresh başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Her 30 saniyede bir güncelle
+            setInterval(updateData, 30000);
+
+            // Sayfa focus olduğunda güncelle
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    updateData();
+                }
+            });
+
+            // Cihaz kartlarına hover efekti ekle
+            const deviceCards = document.querySelectorAll('.device-card');
+            deviceCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // İstatistik kartlarına animasyon ekle
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+
+            console.log('Dashboard yüklendi. Auto-refresh aktif (30 saniye).');
+        });
+
+        // Manuel refresh için F5 veya Ctrl+R yakalanması
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                showLoading();
+            }
+        });
+
+        // Sayfadan ayrılırken loading gizle
+        window.addEventListener('beforeunload', function() {
+            hideLoading();
+        });
+    </script>
+</body>
+</html>

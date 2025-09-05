@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from .models import Device, DeviceReading
+from .forms import DateFilter
 import json
 
 
@@ -41,7 +42,52 @@ def home_view(request):
 
 def device_detail_view(request, device_id):
     device = get_object_or_404(Device, device_id = device_id)
-    veri_gecmisi = DeviceReading.objects.filter(device = device).order_by('-created_at')[:100]
+    filter_form = DateFilter(request.GET or None)
+    veri_gecmisi = DeviceReading.objects.filter(device = device)
+
+    if filter_form.is_valid():
+        start_date_time = filter_form.cleaned_data.get('start_datetime')
+        end_date_time = filter_form.cleaned_data.get('end_datetime')
+
+        if start_date_time:
+            veri_gecmisi = veri_gecmisi.filter(created_at__gte = start_date_time)
+
+        if end_date_time:
+            veri_gecmisi = veri_gecmisi.filter(created_at__lte = end_date_time)
+
+    veri_gecmisi = veri_gecmisi.order_by('-created_at')
+
+    chart_data_per_property = {}
+    chart_labels = []
+    readings = list(veri_gecmisi.order_by('created_at'))
+    all_properties = set()
+    if readings:
+
+        for reading in readings:
+            all_properties.update(reading.properties.keys())
+
+        for reading in veri_gecmisi.order_by('created_at'):
+            timestamp = reading.created_at.strftime('%d/%m %H:%M')
+            chart_labels.append(timestamp)
+
+
+        for prop in all_properties:
+            values = []
+            for reading in readings:
+                if reading.properties and prop in reading.properties:
+                    value = reading.properties[prop]
+                    values.append(value)
+                else:
+                    values.append(0)
+
+            if values:
+                chart_data_per_property[prop] = {
+                    'values': values,
+                    'max_value': max(values) if values else 0
+                }
+
+    chart_data_json = json.dumps(dict(chart_data_per_property))
+    chart_labels_json = json.dumps(chart_labels)
 
     edit_reading_id = request.GET.get('edit')
     edit_reading = None
@@ -93,6 +139,10 @@ def device_detail_view(request, device_id):
                'device': device,
                'veri_gecmisi' : list(veri_gecmisi),
                'edit_reading' : edit_reading,
+               'filter_form': filter_form,
+               'chart_data_per_property': chart_data_json,
+               'chart_labels': chart_labels_json,
+               'properties_list': list(all_properties) if 'all_properties' in locals() else []
                }
 
     return render(request, 'cihaz_detay.html', context)
@@ -257,11 +307,14 @@ def delete_data(request,device_id):
 @csrf_exempt
 def delete_device(request,device_id):
     if request.method == 'DELETE':
+        try:
+            if device_id:
+                device =Device.objects.get(device_id = device_id)
+                device.delete()
+                return JsonResponse({'status': 'Succesfully deleted'},status=200)
 
-        if device_id:
-            device =Device.objects.get(device_id = device_id)
-            device.delete()
-            return JsonResponse({'status': 'Succesfully deleted'},status=200)
-
-        else:
+        except Device.DoesNotExist:
             return JsonResponse({'error':'Device not found'}, status=404)
+
+
+

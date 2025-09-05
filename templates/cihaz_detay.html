@@ -278,7 +278,62 @@
             {% endif %}
         </div>
 
+        <!-- Grafik Bölümü -->
+        <div style="background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; margin-bottom: 30px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h2 class="section-title">Veri Grafikleri</h2>
+
+            <!-- TEST: Basit grafik -->
+
+
+            <div id="chartsContainer"></div>
+        </div>
+
         <!-- Veri Geçmişi -->
+        <div style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+            <h4 style="color: #2c3e50; margin-bottom: 15px;">📅 Tarih & Saat Filtresi</h4>
+
+            <form method="GET">
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 15px; align-items: end;">
+
+                    <div>
+                        {{ filter_form.start_datetime.label_tag }}
+                        {{ filter_form.start_datetime }}
+                    </div>
+
+                    <div>
+                        {{ filter_form.end_datetime.label_tag }}
+                        {{ filter_form.end_datetime }}
+                    </div>
+
+                    <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                 color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; height: fit-content;">
+                        🔍 Filtrele
+                    </button>
+
+                    <a href="?{% if edit_reading %}edit={{ edit_reading.id }}{% endif %}"
+                       style="background: #95a5a6; color: white; padding: 10px 20px; text-decoration: none;
+                              border-radius: 5px; text-align: center; height: fit-content;">
+                        🗑️ Temizle
+                    </a>
+
+                </div>
+
+                <!-- Mevcut edit parametresini koru -->
+                {% if edit_reading %}
+                    <input type="hidden" name="edit" value="{{ edit_reading.id }}">
+                {% endif %}
+            </form>
+
+            <!-- Aktif filtre göster -->
+            {% if filter_form.is_bound %}
+                <div style="margin-top: 10px; padding: 10px; background: rgba(52, 152, 219, 0.1); border-radius: 5px; color: #2980b9;">
+                    <strong>Aktif Filtre:</strong>
+                    {% if request.GET.start_datetime %}Başlangıç: {{ request.GET.start_datetime }}{% endif %}
+                    {% if request.GET.end_datetime %} | Bitiş: {{ request.GET.end_datetime }}{% endif %}
+                </div>
+            {% endif %}
+        </div>
+
         <div class="history-section">
             <h2 class="section-title">Veri Geçmişi</h2>
 
@@ -452,5 +507,85 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Chart.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        const chartDataPerProperty = {{ chart_data_per_property|safe }};
+        const chartLabels = {{ chart_labels|safe }};
+
+        console.log('Chart data:', chartDataPerProperty);
+        console.log('Chart labels:', chartLabels);
+
+        // Dinamik renk üretici
+        function generateColor(index) {
+            const hue = (index * 137.5) % 360;
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        function generateBackgroundColor(index) {
+            const hue = (index * 137.5) % 360;
+            return `hsla(${hue}, 70%, 50%, 0.2)`;
+        }
+
+        const chartsContainer = document.getElementById('chartsContainer');
+        let colorIndex = 0;
+
+        // Her property için ayrı grafik oluştur
+        for (const [propertyName, propertyData] of Object.entries(chartDataPerProperty)) {
+            const chartDiv = document.createElement('div');
+            chartDiv.style.marginBottom = '30px';
+            chartDiv.innerHTML = `
+                <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">
+                    ${propertyName.charAt(0).toUpperCase() + propertyName.slice(1)} Grafiği
+                    <span style="font-size: 0.8em; color: #7f8c8d;">(Max: ${propertyData.max_value})</span>
+                </h4>
+                <canvas id="chart_${propertyName}" width="400" height="200"></canvas>
+            `;
+            chartsContainer.appendChild(chartDiv);
+
+            const ctx2 = document.getElementById(`chart_${propertyName}`).getContext('2d');
+
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
+                        data: propertyData.values,
+                        borderColor: generateColor(colorIndex),
+                        backgroundColor: generateBackgroundColor(colorIndex),
+                        tension: 0.1,
+                        fill: false,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: propertyData.max_value * 1.1,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            colorIndex++;
+        }
+    </script>
 </body>
 </html>
