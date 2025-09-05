@@ -1,20 +1,23 @@
-# **Django Datalogger Projesi** 📊
+# **Django Datalogger Projesi** 
 
 Datalogger projesi cihaz verilerini SQL veritabanında tutarak ve websitesinde gösteren bir projedir. Genel cihaz bilgileri ana sayfada görülebilir. İstenen cihazın üstüne tıklanması durumunda cihazın detaylı sayfasına gidilir. Detaylı cihaz sayfasında cihaz ismi , son cihaz verileri , verilerin tarihleri saatleri ve istenen verileri düzenleme veya silme özelliği bulunmaktadır. Ana sayfada ek olarak karşılaştırma özelliği yer almaktadır. Tıklanma durumunda karşılaştırma sayfasına gidilir ve kullanıcının karşılaştırmak istediği cihazları seçmesi istenir. Eğer cihazlar aynı kanallara sahipse son verileri karşılaştırılır değilse ortak kanallar olmadığı için bir hata mesajı gösterilir. Bu proje barındırdığı API'ler sayesinde entegre edilen cihazlardan veri çekmek amacıyla tasarlanmıştır.
 
 
-## Özellikler ✨
+## Özellikler 
 
 * Genel cihaz bilgilerini sergileyen basit ana sayfa tasarımı
 * Karşılaştırma özelliğiyle cihazlar arası veri karşılaştırma
 * Detaylı cihaz görünümüyle veri manipülasyonu ve veri silme
 * Cihaz üzerinde veya lokal ağda paylaşımlı kullanım
+* Filtreleme ile istenilen tarih ve saat aralığındaki verileri sıralama
+* Filtrelemeyle entegre her bir kanal için ayrı veri grafiği
+* AJAX ile ana sayfada 30 saniyede bir yenileme ile gelen veri kontrolü
 
 
 
 
-# **Kurulum Adımları ve Gereksinimler** 🛠️
-## Gereksinimler 📋
+# **Kurulum Adımları ve Gereksinimler** 
+## Gereksinimler 
 
 - Python 3.13
 - MySQL Server 8.0.43
@@ -22,7 +25,7 @@ Datalogger projesi cihaz verilerini SQL veritabanında tutarak ve websitesinde g
 - Git
 
 
-## Ortam Ayarlarının Yapılması ⚙️
+## Ortam Ayarlarının Yapılması 
 NOT: Python , python pip ve mysql dosyaları kurulduktan sonra sistem path'ine eklenmemiş olabiliyor eğer kayıtlı değilse kayıt için aşağıdaki adımları takip ediniz kayıtlı ise kurulum adımından devam ediniz.(Pip'in Path'e eklenme sebebi bazen ana path üzerinden pip görünmeyebiliyor olduğundan dolayıdır.)
 
 1-Arama kutusuna "Sistem ortam değişkenlerini düzenleyin" yazın ve çıkan uygulamaya tıklayın.
@@ -37,7 +40,7 @@ NOT: Python , python pip ve mysql dosyaları kurulduktan sonra sistem path'ine e
 
 6-Yeni seçeneğine tıklanarak mysql'in kurulu olduğu dosyaya gidilir ve dosya adresi yeni path olarak eklenir.(Genelde "C:\Program Files\MySQL" adresinde bulunur)
 
-## Kurulum ⬇️
+## Kurulum 
 1) proje dosyasını indir
     - git clone https://github.com/Denizbacaksiz/Datalogger_website
 
@@ -69,9 +72,9 @@ NOT: Python , python pip ve mysql dosyaları kurulduktan sonra sistem path'ine e
 
 
 ---
-# **Örnek Python Requestleri** 🚀
+# **Örnek Python Requestleri** 
 
-# CİHAZ EKLEME ➕
+# CİHAZ EKLEME 
 ```python
 import requests
 import json
@@ -92,7 +95,7 @@ print("Yanıt:", response.text)
 
 
 
-# CİHAZ VERİSİ EKLEME 📥
+# CİHAZ VERİSİ EKLEME 
 ```python
 import requests
 import json
@@ -119,7 +122,7 @@ print("="*50)
 
 
 
-# CİHAZ VERİSİ GÜNCELLEME ✍️
+# CİHAZ VERİSİ GÜNCELLEME 
 ```python
 import requests
 import json
@@ -144,7 +147,7 @@ print("="*50)
 ```
 
 
-# CİHAZ VERİSİ SİLME ❌
+# CİHAZ VERİSİ SİLME 
 ```python
 import requests
 import json
@@ -162,7 +165,7 @@ print("="*50)
 ```
 
 
-# CİHAZ SİLME 🗑️
+# CİHAZ SİLME 
 ```python
 import requests
 import json
